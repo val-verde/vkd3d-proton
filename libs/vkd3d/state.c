@@ -1115,7 +1115,6 @@ static HRESULT d3d12_root_signature_init_global(struct d3d12_root_signature *roo
 {
     const VkPhysicalDeviceProperties *vk_device_properties = &device->device_info.properties2.properties;
     const struct vkd3d_bindless_state *bindless_state = &device->bindless_state;
-    VkDescriptorSetLayout set_layouts[VKD3D_MAX_DESCRIPTOR_SETS];
     struct vkd3d_descriptor_set_context context;
     struct d3d12_root_signature_info info;
     unsigned int i;
@@ -1156,7 +1155,7 @@ static HRESULT d3d12_root_signature_init_global(struct d3d12_root_signature *roo
         return hr;
 
     for (i = 0; i < bindless_state->set_count; i++)
-        set_layouts[context.vk_set++] = bindless_state->set_info[i].vk_set_layout;
+        root_signature->set_layouts[context.vk_set++] = bindless_state->set_info[i].vk_set_layout;
 
     if (FAILED(hr = d3d12_root_signature_init_static_samplers(root_signature, desc,
                 &context, &root_signature->vk_sampler_descriptor_layout)))
@@ -1165,7 +1164,7 @@ static HRESULT d3d12_root_signature_init_global(struct d3d12_root_signature *roo
     if (root_signature->vk_sampler_descriptor_layout)
     {
         assert(context.vk_set < VKD3D_MAX_DESCRIPTOR_SETS);
-        set_layouts[context.vk_set] = root_signature->vk_sampler_descriptor_layout;
+        root_signature->set_layouts[context.vk_set] = root_signature->vk_sampler_descriptor_layout;
         root_signature->sampler_descriptor_set = context.vk_set;
 
         context.vk_binding = 0;
@@ -1205,7 +1204,7 @@ static HRESULT d3d12_root_signature_init_global(struct d3d12_root_signature *roo
     if (root_signature->vk_root_descriptor_layout)
     {
         assert(context.vk_set < VKD3D_MAX_DESCRIPTOR_SETS);
-        set_layouts[context.vk_set] = root_signature->vk_root_descriptor_layout;
+        root_signature->set_layouts[context.vk_set] = root_signature->vk_root_descriptor_layout;
         root_signature->root_descriptor_set = context.vk_set;
 
         context.vk_binding = 0;
@@ -1228,14 +1227,16 @@ static HRESULT d3d12_root_signature_init_global(struct d3d12_root_signature *roo
      * For graphics we can generally rely on visibility mask, but not so for compute and raygen,
      * since they use ALL visibility. */
 
+    root_signature->num_set_layouts = context.vk_set;
+
     if (FAILED(hr = vkd3d_create_pipeline_layout_for_stage_mask(
-            device, context.vk_set, set_layouts,
+            device, root_signature->num_set_layouts, root_signature->set_layouts,
             &root_signature->push_constant_range,
             VK_SHADER_STAGE_ALL_GRAPHICS, &root_signature->graphics)))
         return hr;
 
     if (FAILED(hr = vkd3d_create_pipeline_layout_for_stage_mask(
-            device, context.vk_set, set_layouts,
+            device, root_signature->num_set_layouts, root_signature->set_layouts,
             &root_signature->push_constant_range,
             VK_SHADER_STAGE_COMPUTE_BIT, &root_signature->compute)))
         return hr;
@@ -1243,7 +1244,7 @@ static HRESULT d3d12_root_signature_init_global(struct d3d12_root_signature *roo
     if (d3d12_device_supports_ray_tracing_tier_1_0(device))
     {
         if (FAILED(hr = vkd3d_create_pipeline_layout_for_stage_mask(
-                device, context.vk_set, set_layouts,
+                device, root_signature->num_set_layouts, root_signature->set_layouts,
                 &root_signature->push_constant_range,
                 VK_SHADER_STAGE_RAYGEN_BIT_KHR |
                 VK_SHADER_STAGE_MISS_BIT_KHR |
