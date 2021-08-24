@@ -2802,6 +2802,15 @@ struct d3d12_state_object
 
     VkPipeline pipeline;
 
+    struct
+    {
+        VkDescriptorSetLayout set_layout;
+        VkPipelineLayout pipeline_layout;
+        VkDescriptorSet desc_set;
+        VkDescriptorPool desc_pool;
+        uint32_t set_index;
+    } local_static_sampler;
+
     UINT64 pipeline_stack_size;
     struct d3d12_state_object_stack_info stack;
 
