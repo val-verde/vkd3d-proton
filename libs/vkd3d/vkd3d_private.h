@@ -1250,6 +1250,8 @@ HRESULT d3d12_root_signature_create(struct d3d12_device *device, const void *byt
         size_t bytecode_length, struct d3d12_root_signature **root_signature);
 struct d3d12_root_signature *unsafe_impl_from_ID3D12RootSignature(ID3D12RootSignature *iface);
 unsigned int d3d12_root_signature_get_shader_interface_flags(const struct d3d12_root_signature *root_signature);
+HRESULT d3d12_root_signature_create_local_static_samplers_layout(struct d3d12_root_signature *root_signature,
+        VkDescriptorSetLayout vk_set_layout, VkPipelineLayout *vk_pipeline_layout);
 
 int vkd3d_parse_root_signature_v_1_0(const struct vkd3d_shader_code *dxbc,
         struct vkd3d_versioned_root_signature_desc *desc);
