@@ -243,7 +243,11 @@ static inline void pthread_once(pthread_once_t *once, void (*func)(void))
 
 static inline void vkd3d_set_thread_name(const char *name)
 {
+#ifdef __APPLE__
+    pthread_setname_np(name);
+#else
     pthread_setname_np(pthread_self(), name);
+#endif
 }
 
 typedef struct rwlock
