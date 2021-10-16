@@ -34,6 +34,7 @@
  * static.
  */
 #ifdef __MINGW32__
+# define __SCE__
 # define static
 #endif
 
@@ -47,6 +48,7 @@
  */
 #ifdef __MINGW32__
 # undef static
+# undef __SCE__
 #endif
 
 #define VK_USE_PLATFORM_WIN32_KHR
@@ -55,6 +57,7 @@
 
 #ifdef __MINGW32__
 # define static
+# define __SCE__
 #endif
 
 #include <dxgi1_6.h>
@@ -77,6 +80,7 @@
 /* End of MinGW hack. All Windows headers have been included */
 #ifdef __MINGW32__
 # undef static
+# undef __SCE__
 #endif
 
 #define VKD3D_NO_WIN32_TYPES
