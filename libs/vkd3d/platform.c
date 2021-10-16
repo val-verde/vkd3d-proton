@@ -18,7 +18,7 @@
 
 #include "vkd3d_platform.h"
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(__APPLE__)
 
 # include <dlfcn.h>
 # include <errno.h>
@@ -46,6 +46,12 @@ const char *vkd3d_dlerror(void)
 bool vkd3d_get_program_name(char program_name[VKD3D_PATH_MAX])
 {
     char *name, *p, *real_path = NULL;
+#ifdef __ANDROID__
+    extern char *__progname;
+    #define program_invocation_name __progname
+#elifdef __APPLE__
+    #define program_invocation_name getprogname()
+#endif
 
     if ((name = strrchr(program_invocation_name, '/')))
     {
